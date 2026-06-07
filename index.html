@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Worship Signal</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+  html, body { height: 100%; width: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #000; color: #fff;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .screen { position: fixed; inset: 0; display: none; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ---------- Role selection ---------- */
+  #role-screen { background: #0a0a0f; }
+  .role-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; font-weight: 900; letter-spacing: 3px;
+    border: none; cursor: pointer; color: white;
+    transition: transform 0.08s;
+  }
+  .role-btn:active { transform: scale(0.97); }
+  #role-operator { background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); }
+  #role-media    { background: linear-gradient(135deg, #ec4899 0%, #f97316 100%); }
+
+  /* ---------- Operator screen ---------- */
+  #operator-screen {
+    background: #000; align-items: center; justify-content: center;
+    text-align: center; padding: 2rem;
+    transition: background-color 0.15s ease;
+  }
+  #operator-action {
+    font-size: 5rem; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 4px;
+    margin-bottom: 1.5rem; line-height: 1;
+  }
+  #operator-song {
+    font-size: 2.2rem; font-weight: 600;
+    opacity: 0.95; line-height: 1.2;
+    word-break: break-word; max-width: 100%;
+  }
+  .exit-corner {
+    position: absolute; top: calc(env(safe-area-inset-top) + 0.75rem); right: 0.75rem;
+    background: rgba(255,255,255,0.12); color: white;
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 0.45rem 0.85rem; border-radius: 8px;
+    font-size: 0.8rem; cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .status {
+    position: absolute; bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+    left: 50%; transform: translateX(-50%);
+    font-size: 0.7rem; opacity: 0.35; letter-spacing: 1px;
+  }
+
+  /* ---------- Media songs list ---------- */
+  #media-songs-screen { background: #0f0f15; }
+  .header {
+    padding: calc(env(safe-area-inset-top) + 0.75rem) 1rem 0.75rem;
+    background: #0f0f15;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #1e1e28;
+  }
+  .header h2 { font-size: 1.15rem; font-weight: 700; }
+  .header-btns { display: flex; gap: 0.5rem; }
+  .icon-btn {
+    background: #1e1e28; color: white; border: none;
+    padding: 0.55rem 0.9rem; border-radius: 9px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  }
+  .icon-btn.active { background: #ec4899; }
+
+  .song-list {
+    flex: 1; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 0.65rem;
+    padding: 1rem 1rem 7rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .song-list:empty::before {
+    content: 'No songs yet. Tap "+ Add Song" below.';
+    display: block; text-align: center; opacity: 0.4;
+    padding: 3rem 1rem; font-size: 0.95rem;
+  }
+  .song-item { display: flex; align-items: stretch; gap: 0.5rem; }
+  .song-btn {
+    flex: 1; background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white; border: none; padding: 1.2rem 1rem; border-radius: 12px;
+    font-size: 1.1rem; font-weight: 600; text-align: left;
+    cursor: pointer; word-break: break-word;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.25);
+  }
+  .song-btn:active { transform: scale(0.98); }
+  .edit-controls { display: none; gap: 0.35rem; flex-direction: column; }
+  .editing .edit-controls { display: flex; }
+  .edit-btn {
+    background: #2d2d38; color: white; border: none;
+    padding: 0 0.7rem; border-radius: 8px;
+    font-size: 0.95rem; cursor: pointer; min-width: 44px; flex: 1;
+  }
+  .edit-btn.delete { background: #dc2626; }
+  .add-btn {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
+    left: 1.25rem; right: 1.25rem;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white; border: none; padding: 1.1rem; border-radius: 14px;
+    font-size: 1.05rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(16,185,129,0.35);
+  }
+
+  /* ---------- Media control (4 quadrants) ---------- */
+  #media-control-screen { flex-direction: column; }
+  .control-header {
+    background: #0f0f15;
+    padding: calc(env(safe-area-inset-top) + 0.75rem) 1rem 0.75rem;
+    text-align: center; font-weight: 700; font-size: 1.05rem;
+    border-bottom: 1px solid #1e1e28;
+    word-break: break-word;
+  }
+  .quadrants {
+    flex: 1; display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px; background: #000;
+  }
+  .quad {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 900;
+    color: white; border: none; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+  .quad:active { filter: brightness(0.82); }
+  .quad.repeat   { background: #e11d48; }
+  .quad.next     { background: #16a34a; }
+  .quad.previous { background: #2563eb; }
+  .quad.exit     { background: #525252; }
+
+  /* ---------- Modal ---------- */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100; padding: 1rem;
+  }
+  .modal-bg.active { display: flex; }
+  .modal {
+    background: #1e1e28; padding: 1.5rem; border-radius: 16px;
+    width: 100%; max-width: 400px;
+  }
+  .modal h3 { margin-bottom: 1rem; font-size: 1.2rem; }
+  .modal input {
+    width: 100%; padding: 0.95rem; border-radius: 10px;
+    border: 1px solid #444; background: #0f0f15; color: white;
+    font-size: 1rem; margin-bottom: 1rem; -webkit-appearance: none;
+  }
+  .modal-btns { display: flex; gap: 0.5rem; }
+  .modal-btns button {
+    flex: 1; padding: 0.9rem; border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 600; cursor: pointer; color: white;
+  }
+  .btn-confirm { background: #10b981; }
+  .btn-cancel  { background: #525252; }
+
+  /* ---------- Toast (send feedback) ---------- */
+  .toast {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 0.6rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(-200%);
+    background: #dc2626; color: white;
+    padding: 0.65rem 1.1rem; border-radius: 10px;
+    font-size: 0.9rem; font-weight: 600;
+    transition: transform 0.25s cubic-bezier(.2,.9,.3,1.2);
+    z-index: 1000; max-width: 90vw;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: #10b981; }
+
+  /* Tap-confirm flash on quadrants */
+  .quad.flash { animation: flash 0.25s; }
+  @keyframes flash {
+    0%   { filter: brightness(1.4); }
+    100% { filter: brightness(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- Role selection -->
+<div id="role-screen" class="screen active">
+  <button class="role-btn" id="btn-operator">OPERATOR</button>
+  <button class="role-btn" id="btn-media">MEDIA</button>
+</div>
+
+<!-- Operator screen -->
+<div id="operator-screen" class="screen">
+  <button class="exit-corner" id="op-exit">⏻ Switch role</button>
+  <div id="operator-action"></div>
+  <div id="operator-song"></div>
+  <div class="status" id="op-status">connecting…</div>
+</div>
+
+<!-- Media songs list -->
+<div id="media-songs-screen" class="screen">
+  <div class="header">
+    <h2>Songs</h2>
+    <div class="header-btns">
+      <button class="icon-btn" id="edit-toggle">✎ Edit</button>
+      <button class="icon-btn" id="media-exit">⏻</button>
+    </div>
+  </div>
+  <div class="song-list" id="song-list"></div>
+  <button class="add-btn" id="add-song-btn">+ Add Song</button>
+</div>
+
+<!-- Media control -->
+<div id="media-control-screen" class="screen">
+  <div class="control-header" id="current-song-label">Song</div>
+  <div class="quadrants">
+    <button class="quad repeat"   data-action="repeat">Repeat</button>
+    <button class="quad next"     data-action="next">Next</button>
+    <button class="quad previous" data-action="previous">Previous</button>
+    <button class="quad exit"     data-action="exit">Exit</button>
+  </div>
+</div>
+
+<!-- Add song modal -->
+<div class="modal-bg" id="add-modal">
+  <div class="modal">
+    <h3>Add Song</h3>
+    <input type="text" id="song-input" placeholder="Song name" autocomplete="off" autocorrect="off">
+    <div class="modal-btns">
+      <button class="btn-cancel"  id="modal-cancel">Cancel</button>
+      <button class="btn-confirm" id="modal-confirm">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // =================== CONFIG ===================
+  // Change this if you want a separate "channel". Both phones (operator
+  // and media) must use the EXACT SAME value to talk to each other.
+  const TOPIC = 'nenko-bfupc-worship-signal-2026-x9k2m';
+  const NTFY_URL = 'https://ntfy.sh';
+  // ==============================================
+
+  const $ = (id) => document.getElementById(id);
+  const screens = ['role-screen','operator-screen','media-songs-screen','media-control-screen'];
+  function show(id) {
+    screens.forEach(s => $(s).classList.toggle('active', s === id));
+  }
+
+  // ---------- State ----------
+  let songs = [];
+  let editing = false;
+  let currentSong = '';
+  let eventSource = null;
+
+  try {
+    const saved = localStorage.getItem('signal_songs');
+    if (saved) songs = JSON.parse(saved);
+  } catch (e) {}
+  function save() {
+    try { localStorage.setItem('signal_songs', JSON.stringify(songs)); } catch (e) {}
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- Role switching ----------
+  $('btn-operator').onclick = () => {
+    show('operator-screen');
+    resetOperatorScreen();
+    startListening();
+  };
+  $('btn-media').onclick = () => {
+    show('media-songs-screen');
+    renderSongs();
+    stopListening();
+  };
+  $('op-exit').onclick    = () => { stopListening(); show('role-screen'); };
+  $('media-exit').onclick = () => { show('role-screen'); };
+
+  // ---------- Media: songs list ----------
+  function renderSongs() {
+    const list = $('song-list');
+    list.classList.toggle('editing', editing);
+    list.innerHTML = '';
+    songs.forEach((song, i) => {
+      const item = document.createElement('div');
+      item.className = 'song-item';
+
+      const btn = document.createElement('button');
+      btn.className = 'song-btn';
+      btn.textContent = song;
+      btn.onclick = () => selectSong(i);
+
+      const controls = document.createElement('div');
+      controls.className = 'edit-controls';
+      controls.innerHTML = `
+        <button class="edit-btn" data-act="up">▲</button>
+        <button class="edit-btn" data-act="down">▼</button>
+        <button class="edit-btn delete" data-act="del">✕</button>
+      `;
+      controls.querySelector('[data-act="up"]').onclick   = () => moveSong(i, -1);
+      controls.querySelector('[data-act="down"]').onclick = () => moveSong(i, 1);
+      controls.querySelector('[data-act="del"]').onclick  = () => deleteSong(i);
+
+      item.appendChild(btn);
+      item.appendChild(controls);
+      list.appendChild(item);
+    });
+  }
+
+  $('edit-toggle').onclick = () => {
+    editing = !editing;
+    $('edit-toggle').classList.toggle('active', editing);
+    renderSongs();
+  };
+
+  function deleteSong(i) {
+    if (!confirm('Delete "' + songs[i] + '"?')) return;
+    songs.splice(i, 1);
+    save(); renderSongs();
+  }
+  function moveSong(i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= songs.length) return;
+    [songs[i], songs[j]] = [songs[j], songs[i]];
+    save(); renderSongs();
+  }
+  function selectSong(i) {
+    if (editing) return;
+    currentSong = songs[i];
+    $('current-song-label').textContent = currentSong;
+    sendMessage({ type: 'song', name: currentSong });
+    show('media-control-screen');
+  }
+
+  // ---------- Add song modal ----------
+  $('add-song-btn').onclick = () => {
+    $('add-modal').classList.add('active');
+    $('song-input').value = '';
+    setTimeout(() => $('song-input').focus(), 50);
+  };
+  $('modal-cancel').onclick  = () => $('add-modal').classList.remove('active');
+  $('modal-confirm').onclick = addSong;
+  $('song-input').addEventListener('keydown', e => { if (e.key === 'Enter') addSong(); });
+  function addSong() {
+    const name = $('song-input').value.trim();
+    if (!name) return;
+    songs.push(name);
+    save();
+    $('add-modal').classList.remove('active');
+    renderSongs();
+  }
+
+  // ---------- Media: control quadrants ----------
+  document.querySelectorAll('.quad').forEach(q => {
+    q.onclick = () => {
+      q.classList.remove('flash');
+      void q.offsetWidth; // restart animation
+      q.classList.add('flash');
+      sendAction(q.dataset.action);
+    };
+  });
+  function sendAction(action) {
+    if (action === 'exit') {
+      sendMessage({ type: 'exit' });
+      currentSong = '';
+      show('media-songs-screen');
+      return;
+    }
+    sendMessage({ type: 'action', action: action, song: currentSong });
+  }
+
+  // ---------- Toast feedback ----------
+  let toastTimer = null;
+  function toast(msg, isSuccess) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('success', !!isSuccess);
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ---------- Network (ntfy.sh) ----------
+  async function sendMessage(payload) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    try {
+      const res = await fetch(`${NTFY_URL}/${TOPIC}`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      clearTimeout(timer);
+      if (!res.ok) {
+        toast('Send failed (HTTP ' + res.status + ')');
+        return false;
+      }
+      return true;
+    } catch (e) {
+      clearTimeout(timer);
+      if (e.name === 'AbortError') {
+        toast('Send timed out — check internet');
+      } else {
+        toast('Send failed — no connection');
+      }
+      console.error('send error', e);
+      return false;
+    }
+  }
+
+  function startListening() {
+    stopListening();
+    $('op-status').textContent = 'connecting…';
+    const es = new EventSource(`${NTFY_URL}/${TOPIC}/sse`);
+    eventSource = es;
+    es.onopen = () => {
+      if (eventSource !== es) return;
+      $('op-status').textContent = 'connected';
+    };
+    es.onerror = () => {
+      if (eventSource !== es) return;
+      if (es.readyState === EventSource.CONNECTING) {
+        $('op-status').textContent = 'reconnecting…';
+      } else if (es.readyState === EventSource.CLOSED) {
+        $('op-status').textContent = 'disconnected';
+      }
+    };
+    es.onmessage = (e) => {
+      if (eventSource !== es) return;
+      try {
+        const data = JSON.parse(e.data);
+        if (data && data.event === 'message' && typeof data.message === 'string') {
+          handleMessage(JSON.parse(data.message));
+        }
+      } catch (err) {
+        console.error('parse error', err);
+      }
+    };
+  }
+  function stopListening() {
+    if (eventSource) {
+      eventSource.onmessage = null;
+      eventSource.onerror   = null;
+      eventSource.onopen    = null;
+      try { eventSource.close(); } catch (e) {}
+      eventSource = null;
+    }
+  }
+
+  function handleMessage(msg) {
+    const op = $('operator-screen');
+    if (msg.type === 'song') {
+      op.style.backgroundColor = '#000';
+      $('operator-action').textContent = '';
+      $('operator-song').textContent = msg.name || '';
+    } else if (msg.type === 'action') {
+      const colors = { repeat: '#e11d48', next: '#16a34a', previous: '#2563eb' };
+      op.style.backgroundColor = colors[msg.action] || '#000';
+      $('operator-action').textContent = msg.action || '';
+      $('operator-song').textContent   = msg.song || '';
+    } else if (msg.type === 'exit') {
+      resetOperatorScreen();
+    }
+  }
+  function resetOperatorScreen() {
+    $('operator-screen').style.backgroundColor = '#000';
+    $('operator-action').textContent = '';
+    $('operator-song').textContent   = '';
+  }
+
+  // Prevent iOS double-tap zoom
+  document.addEventListener('gesturestart', e => e.preventDefault());
+</script>
+</body>
+</html>
