@@ -1289,11 +1289,11 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   <div class="modal">
     <h3>Psalm Mode Request</h3>
     <div class="req-from">
-      Кто-то хочет войти в Psalm Mode:
+      Someone regiter for Psalm Mode:
       <strong id="psalm-confirm-device">—</strong>
     </div>
     <div style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 1rem; line-height: 1.4;">
-      Если подтвердить, другие сообщения будут игнорироваться до выхода из режима.
+      If you confirm, other messages will be ignored before exiting the mode.
     </div>
     <div class="modal-btns">
       <button class="btn-reject"  id="psalm-confirm-reject">Reject</button>
@@ -2093,17 +2093,17 @@ async function initPsalmsDB() {
 }
 
 async function resetPsalmsFromRepo() {
-  if (!confirm('Перезагрузить базу псалмов из репозитория? Локальные изменения будут потеряны.')) return;
+  if (!confirm('Reload psalm database from repository? local changes will be lost.')) return;
   try {
     const res = await fetch(PSALMS_URL, { cache: 'no-store' });
-    if (!res.ok) { toast('Не удалось загрузить psalms.json'); return; }
+    if (!res.ok) { toast('Failed to download psalms.json'); return; }
     const data = await res.json();
     psalms = Array.isArray(data && data.psalms) ? data.psalms : [];
     lsSet('signal_psalms', psalms);
     renderPsalmList();
-    toast('Загружено из репозитория', true);
+    toast('Loaded from the repository', true);
   } catch (e) {
-    toast('Ошибка сети');
+    toast('Network error');
   }
 }
 
@@ -2118,7 +2118,7 @@ function exportPsalmsJson() {
   a.download = 'psalms.json';
   a.click();
   URL.revokeObjectURL(url);
-  toast('psalms.json скачан', true);
+  toast('psalms.json downloads', true);
 }
 
 function newPsalmId() {
@@ -2169,11 +2169,11 @@ function stopPsalmListening() {
 function handlePsalmistMessage(msg) {
   if (!msg || !msg.type) return;
   if (msg.type === 'psalm_accept' && msg.target === deviceName) {
-    toast('Подтверждено', true);
+    toast('Confirmed', true);
     show('psalm-list-screen');
     renderPsalmList();
   } else if (msg.type === 'psalm_reject' && msg.target === deviceName) {
-    toast('Запрос отклонён');
+    toast('Request rejected');
     stopPsalmListening();
     show('role-screen');
   } else if (msg.type === 'psalm_end') {
@@ -2184,7 +2184,7 @@ function handlePsalmistMessage(msg) {
         $('psalm-waiting-screen').classList.contains('active')) {
       stopPsalmListening();
       show('role-screen');
-      toast('Режим завершён');
+      toast('Mode over');
     }
   }
 }
@@ -2218,7 +2218,7 @@ $('psalm-confirm-reject').onclick = () => {
   psalmPendingDevice = null;
 };
 $('psalm-lock-end').onclick = () => {
-  if (!confirm('Завершить Psalm Mode?')) return;
+  if (!confirm('Complete Psalm Mode?')) return;
   sendMessage({ type: 'psalm_end' });
   psalmMode = null;
   opDevices.clear();
@@ -2298,7 +2298,7 @@ function renderPsalmList() {
 function deletePsalm(id) {
   const p = psalms.find(x => x.id === id);
   if (!p) return;
-  if (!confirm('Удалить псалом "' + (p.title || '?') + '"?')) return;
+  if (!confirm('Remove psalm "' + (p.title || '?') + '"?')) return;
   psalms = psalms.filter(x => x.id !== id);
   lsSet('signal_psalms', psalms);
   renderPsalmList();
@@ -2318,7 +2318,7 @@ function openPsalmBlocks(p) {
     card.className = 'block-card ' + (b.type === 'chorus' ? 'chorus' : 'verse');
     const label = document.createElement('span');
     label.className = 'block-label';
-    label.textContent = b.type === 'chorus' ? 'Припев' : 'Куплет ' + (i + 1);
+    label.textContent = b.type === 'chorus' ? 'Chorus' : 'Verse ' + (i + 1);
     card.appendChild(label);
     const txt = document.createElement('span');
     txt.textContent = b.text || '';
@@ -2331,7 +2331,7 @@ function openPsalmBlocks(p) {
         psalmNumber: p.number,
         psalmTitle: p.title
       });
-      if (ok) toast('Отправлено', true);
+      if (ok) toast('Sent', true);
     };
     list.appendChild(card);
   });
@@ -2390,11 +2390,11 @@ function renderPsalmEditBlocks() {
     toggle.className = 'block-type-toggle';
     const verseBtn = document.createElement('button');
     verseBtn.className = 'verse' + (b.type !== 'chorus' ? ' active' : '');
-    verseBtn.textContent = 'Куплет';
+    verseBtn.textContent = 'Verse';
     verseBtn.onclick = () => { b.type = 'verse'; renderPsalmEditBlocks(); };
     const chorusBtn = document.createElement('button');
     chorusBtn.className = 'chorus' + (b.type === 'chorus' ? ' active' : '');
-    chorusBtn.textContent = 'Припев';
+    chorusBtn.textContent = 'Chorus';
     chorusBtn.onclick = () => { b.type = 'chorus'; renderPsalmEditBlocks(); };
     toggle.appendChild(verseBtn);
     toggle.appendChild(chorusBtn);
@@ -2403,7 +2403,7 @@ function renderPsalmEditBlocks() {
     // Textarea
     const ta = document.createElement('textarea');
     ta.value = b.text || '';
-    ta.placeholder = 'Текст блока…';
+    ta.placeholder = 'Block text…';
     ta.oninput = () => { b.text = ta.value; };
     ed.appendChild(ta);
 
@@ -2428,7 +2428,7 @@ function renderPsalmEditBlocks() {
     delBtn.className = 'del';
     delBtn.textContent = 'Delete';
     delBtn.onclick = () => {
-      if (psalmEditDraft.blocks.length === 1) { toast('Должен быть хоть один блок'); return; }
+      if (psalmEditDraft.blocks.length === 1) { toast('There must be at least one block'); return; }
       psalmEditDraft.blocks.splice(i, 1);
       renderPsalmEditBlocks();
     };
@@ -2444,13 +2444,13 @@ function renderPsalmEditBlocks() {
 function savePsalmEditor() {
   const number = parseInt($('psalm-edit-number').value, 10);
   const title = $('psalm-edit-title-input').value.trim();
-  if (!number || number < 1) { toast('Укажи номер псалма'); return; }
-  if (!title) { toast('Укажи название'); return; }
+  if (!number || number < 1) { toast('Enter the Psalm number'); return; }
+  if (!title) { toast('Specify the name'); return; }
   // Очищаем пустые блоки
   const cleanBlocks = psalmEditDraft.blocks
     .map(b => ({ type: b.type === 'chorus' ? 'chorus' : 'verse', text: (b.text || '').trim() }))
     .filter(b => b.text);
-  if (cleanBlocks.length === 0) { toast('Добавь хотя бы один непустой блок'); return; }
+  if (cleanBlocks.length === 0) { toast('add at least one non-empty block'); return; }
 
   if (psalmEditDraft.id) {
     // редактирование
@@ -2466,7 +2466,7 @@ function savePsalmEditor() {
   psalmEditDraft = null;
   show('psalm-list-screen');
   renderPsalmList();
-  toast('Сохранено', true);
+  toast('Saved', true);
 }
 
 // ─── 12.7 Меню базы псалмов (export / reset) ──────────────────────
