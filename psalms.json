@@ -20,6 +20,15 @@
       ]
     },
     {
+      "id": "p_seed_001",
+      "number": 001,
+      "title": "test no 1",
+      "blocks": [
+        { "type": "verse", "text": "это куплоет \nэто тоже привер" },
+        { "type": "chorus", "text": "это припев" }
+      ]
+    },
+    {
       "id": "p_seed_362",
       "number": 362,
       "title": "Не Покину Я Вас",
