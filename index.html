@@ -12,114 +12,178 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #000; color: #fff;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
+  input, textarea { user-select: text; -webkit-user-select: text; }
+
   .screen { position: fixed; inset: 0; display: none; flex-direction: column; }
   .screen.active { display: flex; }
+
+  /* ---------- PIN entry ---------- */
+  #pin-screen { background: #0a0a0f; align-items: center; justify-content: center; padding: 1.5rem; }
+  .auth-card { width: 100%; max-width: 360px; background: #161620; padding: 1.5rem; border-radius: 16px; border: 1px solid #25252e; }
+  .auth-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .auth-hint  { font-size: 0.85rem; opacity: 0.6; margin-bottom: 1rem; line-height: 1.4; }
+  .pin-dots { display: flex; gap: 0.55rem; justify-content: center; margin: 1.2rem 0 1.4rem; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: #2d2d38; border: 1px solid #3a3a45; transition: all 0.15s; }
+  .pin-dot.filled { background: #6366f1; border-color: #6366f1; transform: scale(1.15); }
+  .pin-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .pin-key { background: #1f1f2a; border: 1px solid #2a2a35; color: white; padding: 1rem; border-radius: 12px; font-size: 1.5rem; font-weight: 700; cursor: pointer; }
+  .pin-key:active { background: #2a2a35; transform: scale(0.96); }
+  .pin-key.del { background: #2a1f1f; }
+  .pin-key.empty { background: transparent; border-color: transparent; pointer-events: none; }
+  .auth-card.shake { animation: shake 0.4s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  /* ---------- Device name ---------- */
+  #name-screen { background: #0a0a0f; align-items: center; justify-content: center; padding: 1.5rem; }
+  .auth-card input {
+    width: 100%; padding: 0.95rem; margin: 0.5rem 0 1rem;
+    background: #0f0f15; border: 1px solid #2a2a35; border-radius: 10px;
+    color: white; font-size: 1rem; -webkit-appearance: none;
+  }
+  .auth-card button.primary {
+    width: 100%; padding: 0.95rem;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white; border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+  }
 
   /* ---------- Role selection ---------- */
   #role-screen { background: #0a0a0f; }
   .role-btn {
     flex: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 3rem; font-weight: 900; letter-spacing: 3px;
+    font-size: 2.3rem; font-weight: 900; letter-spacing: 3px;
     border: none; cursor: pointer; color: white;
     transition: transform 0.08s;
   }
   .role-btn:active { transform: scale(0.97); }
   #role-operator { background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); }
   #role-media    { background: linear-gradient(135deg, #ec4899 0%, #f97316 100%); }
+  #role-chair    { background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); }
+  .role-settings {
+    position: absolute; top: calc(env(safe-area-inset-top) + 0.6rem); right: 0.6rem;
+    background: rgba(0,0,0,0.45); color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 0.4rem 0.7rem; border-radius: 8px;
+    font-size: 0.75rem; cursor: pointer; z-index: 5;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
 
-  /* ---------- Operator screen ---------- */
-  #operator-screen {
-    background: #000; align-items: center; justify-content: center;
-    text-align: center; padding: 2rem;
+  /* ---------- Operator ---------- */
+  #operator-screen { background: #000; }
+  .op-grid {
+    flex: 1; display: grid; gap: 3px; background: #000;
+    padding: 2px;
+  }
+  .op-panel {
+    background: #000; position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1.5rem 1rem; text-align: center; min-width: 0; min-height: 0;
     transition: background-color 0.15s ease;
+    overflow: hidden;
   }
-  #operator-action {
-    font-size: 5rem; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 4px;
-    margin-bottom: 1.5rem; line-height: 1;
-  }
-  #operator-song {
-    font-size: 2.2rem; font-weight: 600;
-    opacity: 0.95; line-height: 1.2;
-    word-break: break-word; max-width: 100%;
-  }
+  .op-action  { font-size: 5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem; line-height: 1; }
+  .op-content { font-size: 2.4rem; font-weight: 600; line-height: 1.2; word-break: break-word; max-width: 100%; }
+  .op-device  { position: absolute; top: 0.5rem; left: 0.75rem; font-size: 0.7rem; opacity: 0.45; font-weight: 500; letter-spacing: 0.5px; }
+  .op-grid.split .op-action  { font-size: 2.2rem; margin-bottom: 0.5rem; }
+  .op-grid.split .op-content { font-size: 1.3rem; }
+
   .exit-corner {
-    position: absolute; top: calc(env(safe-area-inset-top) + 0.75rem); right: 0.75rem;
+    position: absolute; top: calc(env(safe-area-inset-top) + 0.6rem); right: 0.6rem;
     background: rgba(255,255,255,0.12); color: white;
     border: 1px solid rgba(255,255,255,0.25);
     padding: 0.45rem 0.85rem; border-radius: 8px;
-    font-size: 0.8rem; cursor: pointer;
-    backdrop-filter: blur(8px);
+    font-size: 0.75rem; cursor: pointer; z-index: 10;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   }
   .status {
-    position: absolute; bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+    position: absolute; bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
     left: 50%; transform: translateX(-50%);
-    font-size: 0.7rem; opacity: 0.35; letter-spacing: 1px;
+    font-size: 0.65rem; opacity: 0.3; letter-spacing: 1px;
   }
 
-  /* ---------- Media songs list ---------- */
-  #media-songs-screen { background: #0f0f15; }
+  /* ---------- Common header ---------- */
   .header {
-    padding: calc(env(safe-area-inset-top) + 0.75rem) 1rem 0.75rem;
+    padding: calc(env(safe-area-inset-top) + 0.7rem) 0.9rem 0.75rem;
     background: #0f0f15;
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #1e1e28;
+    border-bottom: 1px solid #1e1e28; gap: 0.5rem;
   }
-  .header h2 { font-size: 1.15rem; font-weight: 700; }
-  .header-btns { display: flex; gap: 0.5rem; }
+  .header h2 {
+    font-size: 1.05rem; font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0;
+  }
+  .header-btns { display: flex; gap: 0.4rem; flex-shrink: 0; }
   .icon-btn {
     background: #1e1e28; color: white; border: none;
-    padding: 0.55rem 0.9rem; border-radius: 9px;
-    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    padding: 0.5rem 0.8rem; border-radius: 9px;
+    font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    white-space: nowrap;
   }
   .icon-btn.active { background: #ec4899; }
 
-  .song-list {
-    flex: 1; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 0.65rem;
-    padding: 1rem 1rem 7rem;
-    -webkit-overflow-scrolling: touch;
+  /* ---------- Lists (songs / texts) ---------- */
+  .list-screen { background: #0f0f15; }
+  .item-list {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    padding: 0.85rem 0.85rem 7rem;
   }
-  .song-list:empty::before {
-    content: 'No songs yet. Tap "+ Add Song" below.';
+  .item-list:empty::before {
+    content: attr(data-empty);
     display: block; text-align: center; opacity: 0.4;
     padding: 3rem 1rem; font-size: 0.95rem;
   }
-  .song-item { display: flex; align-items: stretch; gap: 0.5rem; }
-  .song-btn {
-    flex: 1; background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white; border: none; padding: 1.2rem 1rem; border-radius: 12px;
-    font-size: 1.1rem; font-weight: 600; text-align: left;
-    cursor: pointer; word-break: break-word;
-    box-shadow: 0 2px 8px rgba(79,70,229,0.25);
+  .list-item { display: flex; align-items: stretch; gap: 0.4rem; }
+  .item-btn {
+    flex: 1; color: white; border: none;
+    padding: 1.05rem 1rem; border-radius: 12px;
+    font-size: 1.05rem; font-weight: 600; text-align: left;
+    cursor: pointer; word-break: break-word; min-width: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
-  .song-btn:active { transform: scale(0.98); }
-  .edit-controls { display: none; gap: 0.35rem; flex-direction: column; }
+  .item-btn.song { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+  .item-btn.text {
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .item-btn:active { transform: scale(0.98); }
+  .edit-controls { display: none; gap: 0.3rem; flex-direction: column; flex-shrink: 0; }
   .editing .edit-controls { display: flex; }
   .edit-btn {
     background: #2d2d38; color: white; border: none;
-    padding: 0 0.7rem; border-radius: 8px;
-    font-size: 0.95rem; cursor: pointer; min-width: 44px; flex: 1;
+    padding: 0 0.6rem; border-radius: 8px;
+    font-size: 0.9rem; cursor: pointer; min-width: 40px; flex: 1;
   }
   .edit-btn.delete { background: #dc2626; }
+
   .add-btn {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
-    left: 1.25rem; right: 1.25rem;
+    bottom: calc(env(safe-area-inset-bottom) + 1.1rem);
+    left: 1.1rem; right: 1.1rem;
     background: linear-gradient(135deg, #10b981, #059669);
-    color: white; border: none; padding: 1.1rem; border-radius: 14px;
+    color: white; border: none; padding: 1rem; border-radius: 14px;
     font-size: 1.05rem; font-weight: 700; cursor: pointer;
     box-shadow: 0 6px 18px rgba(16,185,129,0.35);
   }
 
-  /* ---------- Media control (4 quadrants) ---------- */
+  /* ---------- Media quadrants ---------- */
   #media-control-screen { flex-direction: column; }
   .control-header {
     background: #0f0f15;
-    padding: calc(env(safe-area-inset-top) + 0.75rem) 1rem 0.75rem;
-    text-align: center; font-weight: 700; font-size: 1.05rem;
+    padding: calc(env(safe-area-inset-top) + 0.7rem) 1rem 0.75rem;
+    text-align: center; font-weight: 700; font-size: 1rem;
     border-bottom: 1px solid #1e1e28;
     word-break: break-word;
   }
@@ -127,11 +191,11 @@
     flex: 1; display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    gap: 4px; background: #000;
+    gap: 3px; background: #000;
   }
   .quad {
     display: flex; align-items: center; justify-content: center;
-    font-size: 2rem; font-weight: 900;
+    font-size: 1.9rem; font-weight: 900;
     color: white; border: none; cursor: pointer;
     text-transform: uppercase; letter-spacing: 2px;
   }
@@ -140,41 +204,101 @@
   .quad.next     { background: #16a34a; }
   .quad.previous { background: #2563eb; }
   .quad.exit     { background: #525252; }
+  .quad.flash    { animation: flash 0.25s; }
+  @keyframes flash { 0% { filter: brightness(1.4); } 100% { filter: brightness(1); } }
+
+  /* ---------- Chair: Bible/Text choice ---------- */
+  #chair-choice-screen { background: #0f0f15; }
+  .choice-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 2.3rem; font-weight: 900; letter-spacing: 3px;
+    border: none; cursor: pointer; color: white;
+  }
+  .choice-btn:active { transform: scale(0.97); }
+  #choice-bible { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+  #choice-text  { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+
+  /* ---------- Bible ---------- */
+  .bible-screen { background: #0f0f15; }
+  .books-list {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 0.85rem 0.85rem 1.5rem;
+    display: grid; grid-template-columns: 1fr; gap: 0.4rem;
+  }
+  .book-btn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; border: none;
+    padding: 0.9rem 1rem; border-radius: 10px;
+    font-size: 1rem; font-weight: 600; text-align: left;
+    cursor: pointer;
+  }
+  .book-btn:active { transform: scale(0.98); }
+  .book-section {
+    font-size: 0.72rem; opacity: 0.5;
+    text-transform: uppercase; letter-spacing: 2px;
+    padding: 1rem 0.4rem 0.3rem;
+  }
+  .num-grid {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 0.85rem 0.85rem 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+    gap: 0.45rem;
+    align-content: start;
+  }
+  .num-btn {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white; border: none; border-radius: 10px;
+    font-size: 1.15rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .num-btn:active { transform: scale(0.95); }
+  .num-more {
+    grid-column: 1 / -1;
+    aspect-ratio: unset;
+    padding: 0.85rem;
+    background: #2d2d38;
+    font-size: 0.95rem;
+  }
 
   /* ---------- Modal ---------- */
   .modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.78);
     display: none; align-items: center; justify-content: center;
     z-index: 100; padding: 1rem;
   }
   .modal-bg.active { display: flex; }
   .modal {
-    background: #1e1e28; padding: 1.5rem; border-radius: 16px;
+    background: #1e1e28; padding: 1.4rem; border-radius: 16px;
     width: 100%; max-width: 400px;
   }
   .modal h3 { margin-bottom: 1rem; font-size: 1.2rem; }
-  .modal input {
-    width: 100%; padding: 0.95rem; border-radius: 10px;
+  .modal input, .modal textarea {
+    width: 100%; padding: 0.85rem; border-radius: 10px;
     border: 1px solid #444; background: #0f0f15; color: white;
     font-size: 1rem; margin-bottom: 1rem; -webkit-appearance: none;
+    font-family: inherit;
   }
+  .modal textarea { min-height: 100px; resize: vertical; }
   .modal-btns { display: flex; gap: 0.5rem; }
   .modal-btns button {
-    flex: 1; padding: 0.9rem; border: none; border-radius: 10px;
+    flex: 1; padding: 0.85rem; border: none; border-radius: 10px;
     font-size: 1rem; font-weight: 600; cursor: pointer; color: white;
   }
   .btn-confirm { background: #10b981; }
   .btn-cancel  { background: #525252; }
+  .btn-danger  { background: #dc2626; width: 100%; padding: 0.9rem; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; color: white; }
 
-  /* ---------- Toast (send feedback) ---------- */
+  /* ---------- Toast ---------- */
   .toast {
     position: fixed;
     top: calc(env(safe-area-inset-top) + 0.6rem);
     left: 50%;
     transform: translateX(-50%) translateY(-200%);
     background: #dc2626; color: white;
-    padding: 0.65rem 1.1rem; border-radius: 10px;
-    font-size: 0.9rem; font-weight: 600;
+    padding: 0.55rem 1rem; border-radius: 10px;
+    font-size: 0.85rem; font-weight: 600;
     transition: transform 0.25s cubic-bezier(.2,.9,.3,1.2);
     z-index: 1000; max-width: 90vw;
     box-shadow: 0 6px 20px rgba(0,0,0,0.4);
@@ -182,47 +306,61 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.success { background: #10b981; }
-
-  /* Tap-confirm flash on quadrants */
-  .quad.flash { animation: flash 0.25s; }
-  @keyframes flash {
-    0%   { filter: brightness(1.4); }
-    100% { filter: brightness(1); }
-  }
 </style>
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
 
-<!-- Role selection -->
-<div id="role-screen" class="screen active">
-  <button class="role-btn" id="btn-operator">OPERATOR</button>
-  <button class="role-btn" id="btn-media">MEDIA</button>
+<!-- PIN screen -->
+<div id="pin-screen" class="screen active">
+  <div class="auth-card">
+    <div class="auth-title">Enter PIN</div>
+    <div class="auth-hint">6 digits — must match on all your devices</div>
+    <div class="pin-dots" id="pin-dots"></div>
+    <div class="pin-keys" id="pin-keys"></div>
+  </div>
 </div>
 
-<!-- Operator screen -->
+<!-- Device name -->
+<div id="name-screen" class="screen">
+  <div class="auth-card">
+    <div class="auth-title">Device name</div>
+    <div class="auth-hint">Shown to the operator when this device sends something</div>
+    <input type="text" id="device-name-input" placeholder="e.g. Pastor Andriy" maxlength="30" autocapitalize="words">
+    <button class="primary" id="name-save">Continue</button>
+  </div>
+</div>
+
+<!-- Role selection -->
+<div id="role-screen" class="screen">
+  <button class="role-settings" id="settings-btn">⚙ Settings</button>
+  <button class="role-btn" id="btn-operator">OPERATOR</button>
+  <button class="role-btn" id="btn-media">MEDIA</button>
+  <button class="role-btn" id="btn-chair">CHAIR</button>
+</div>
+
+<!-- Operator -->
 <div id="operator-screen" class="screen">
   <button class="exit-corner" id="op-exit">⏻ Switch role</button>
-  <div id="operator-action"></div>
-  <div id="operator-song"></div>
+  <div class="op-grid" id="op-grid"></div>
   <div class="status" id="op-status">connecting…</div>
 </div>
 
-<!-- Media songs list -->
-<div id="media-songs-screen" class="screen">
+<!-- Media: songs list -->
+<div id="media-songs-screen" class="screen list-screen">
   <div class="header">
     <h2>Songs</h2>
     <div class="header-btns">
-      <button class="icon-btn" id="edit-toggle">✎ Edit</button>
-      <button class="icon-btn" id="media-exit">⏻</button>
+      <button class="icon-btn" id="songs-edit-toggle">✎ Edit</button>
+      <button class="icon-btn" id="songs-exit">⏻</button>
     </div>
   </div>
-  <div class="song-list" id="song-list"></div>
+  <div class="item-list" id="song-list" data-empty='No songs yet. Tap "+ Add Song" below.'></div>
   <button class="add-btn" id="add-song-btn">+ Add Song</button>
 </div>
 
-<!-- Media control -->
+<!-- Media: quadrants -->
 <div id="media-control-screen" class="screen">
   <div class="control-header" id="current-song-label">Song</div>
   <div class="quadrants">
@@ -233,259 +371,699 @@
   </div>
 </div>
 
+<!-- Chair: choice -->
+<div id="chair-choice-screen" class="screen">
+  <button class="exit-corner" id="chair-exit">⏻ Switch role</button>
+  <button class="choice-btn" id="choice-bible">BIBLE</button>
+  <button class="choice-btn" id="choice-text">TEXT</button>
+</div>
+
+<!-- Chair: texts -->
+<div id="chair-texts-screen" class="screen list-screen">
+  <div class="header">
+    <h2>Texts</h2>
+    <div class="header-btns">
+      <button class="icon-btn" id="texts-back">← Back</button>
+      <button class="icon-btn" id="texts-edit-toggle">✎ Edit</button>
+    </div>
+  </div>
+  <div class="item-list" id="text-list" data-empty='No texts yet. Tap "+ Add Text" below.'></div>
+  <button class="add-btn" id="add-text-btn">+ Add Text</button>
+</div>
+
+<!-- Chair: Bible books -->
+<div id="chair-bible-books-screen" class="screen bible-screen">
+  <div class="header">
+    <h2>Bible — Choose Book</h2>
+    <div class="header-btns">
+      <button class="icon-btn" id="books-back">← Back</button>
+    </div>
+  </div>
+  <div class="books-list" id="books-list"></div>
+</div>
+
+<!-- Chair: Bible chapters -->
+<div id="chair-bible-chapters-screen" class="screen bible-screen">
+  <div class="header">
+    <h2 id="chapters-title">Chapter</h2>
+    <div class="header-btns">
+      <button class="icon-btn" id="chapters-back">← Books</button>
+    </div>
+  </div>
+  <div class="num-grid" id="chapters-grid"></div>
+</div>
+
+<!-- Chair: Bible verses -->
+<div id="chair-bible-verses-screen" class="screen bible-screen">
+  <div class="header">
+    <h2 id="verses-title">Verse</h2>
+    <div class="header-btns">
+      <button class="icon-btn" id="verses-back">← Chapters</button>
+    </div>
+  </div>
+  <div class="num-grid" id="verses-grid"></div>
+</div>
+
 <!-- Add song modal -->
-<div class="modal-bg" id="add-modal">
+<div class="modal-bg" id="add-song-modal">
   <div class="modal">
     <h3>Add Song</h3>
     <input type="text" id="song-input" placeholder="Song name" autocomplete="off" autocorrect="off">
     <div class="modal-btns">
-      <button class="btn-cancel"  id="modal-cancel">Cancel</button>
-      <button class="btn-confirm" id="modal-confirm">Add</button>
+      <button class="btn-cancel"  id="song-modal-cancel">Cancel</button>
+      <button class="btn-confirm" id="song-modal-confirm">Add</button>
     </div>
   </div>
 </div>
 
+<!-- Add text modal -->
+<div class="modal-bg" id="add-text-modal">
+  <div class="modal">
+    <h3>Add Text</h3>
+    <textarea id="text-input" placeholder="Text content (shown to operator)"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel"  id="text-modal-cancel">Cancel</button>
+      <button class="btn-confirm" id="text-modal-confirm">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-bg" id="settings-modal">
+  <div class="modal">
+    <h3>Settings</h3>
+    <div style="opacity:0.6; font-size:0.85rem; margin-bottom:0.4rem;">Device name</div>
+    <input type="text" id="settings-name" maxlength="30">
+    <div class="modal-btns" style="margin-bottom:0.7rem;">
+      <button class="btn-cancel" id="settings-cancel">Cancel</button>
+      <button class="btn-confirm" id="settings-save">Save</button>
+    </div>
+    <button class="btn-danger" id="settings-logout">Change PIN (sign out)</button>
+  </div>
+</div>
+
 <script>
-  // =================== CONFIG ===================
-  // Change this if you want a separate "channel". Both phones (operator
-  // and media) must use the EXACT SAME value to talk to each other.
-  const TOPIC = 'nenko-bfupc-worship-signal-2026-x9k2m';
-  const NTFY_URL = 'https://ntfy.sh';
-  // ==============================================
+// =================== CONFIG ===================
+const NTFY_URL = 'https://ntfy.sh';
+const APP_PREFIX = 'nenko-signal-v2-';  // app namespace for ntfy topics
+const STALE_MS = 10000;                 // device fades from split after 10s
+const CORRECT_PIN = '258013';           // only this PIN grants access
+// ==============================================
 
-  const $ = (id) => document.getElementById(id);
-  const screens = ['role-screen','operator-screen','media-songs-screen','media-control-screen'];
-  function show(id) {
-    screens.forEach(s => $(s).classList.toggle('active', s === id));
+const $ = (id) => document.getElementById(id);
+const SCREENS = [
+  'pin-screen','name-screen','role-screen',
+  'operator-screen','media-songs-screen','media-control-screen',
+  'chair-choice-screen','chair-texts-screen',
+  'chair-bible-books-screen','chair-bible-chapters-screen','chair-bible-verses-screen'
+];
+function show(id) {
+  SCREENS.forEach(s => $(s).classList.toggle('active', s === id));
+}
+
+// ---------- Storage ----------
+function lsGet(key, def) {
+  try { const v = localStorage.getItem(key); return v === null ? def : JSON.parse(v); }
+  catch (e) { return def; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+}
+
+// ---------- State ----------
+let pin = lsGet('signal_pin', '');
+let deviceName = lsGet('signal_device_name', '');
+let songs = lsGet('signal_songs', []);
+let texts = lsGet('signal_texts', []);
+let editingSongs = false, editingTexts = false;
+let currentSong = '';
+let currentBook = null;   // { name, chapters }
+let currentChapter = 0;
+let eventSource = null;
+let pinBuffer = '';
+
+// ---------- Toast ----------
+let toastTimer = null;
+function toast(msg, isSuccess) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.toggle('success', !!isSuccess);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ---------- Bible: 66 books with chapter counts (Protestant canon) ----------
+const BIBLE_BOOKS = [
+  // Old Testament (39)
+  ['Genesis',50],['Exodus',40],['Leviticus',27],['Numbers',36],['Deuteronomy',34],
+  ['Joshua',24],['Judges',21],['Ruth',4],['1 Samuel',31],['2 Samuel',24],
+  ['1 Kings',22],['2 Kings',25],['1 Chronicles',29],['2 Chronicles',36],['Ezra',10],
+  ['Nehemiah',13],['Esther',10],['Job',42],['Psalms',150],['Proverbs',31],
+  ['Ecclesiastes',12],['Song of Solomon',8],['Isaiah',66],['Jeremiah',52],['Lamentations',5],
+  ['Ezekiel',48],['Daniel',12],['Hosea',14],['Joel',3],['Amos',9],
+  ['Obadiah',1],['Jonah',4],['Micah',7],['Nahum',3],['Habakkuk',3],
+  ['Zephaniah',3],['Haggai',2],['Zechariah',14],['Malachi',4],
+  // New Testament (27)
+  ['Matthew',28],['Mark',16],['Luke',24],['John',21],['Acts',28],
+  ['Romans',16],['1 Corinthians',16],['2 Corinthians',13],['Galatians',6],['Ephesians',6],
+  ['Philippians',4],['Colossians',4],['1 Thessalonians',5],['2 Thessalonians',3],['1 Timothy',6],
+  ['2 Timothy',4],['Titus',3],['Philemon',1],['Hebrews',13],['James',5],
+  ['1 Peter',5],['2 Peter',3],['1 John',5],['2 John',1],['3 John',1],['Jude',1],['Revelation',22]
+];
+
+// =====================================================================
+// PIN ENTRY
+// =====================================================================
+function renderPinDots() {
+  const dots = $('pin-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const d = document.createElement('div');
+    d.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+    dots.appendChild(d);
   }
-
-  // ---------- State ----------
-  let songs = [];
-  let editing = false;
-  let currentSong = '';
-  let eventSource = null;
-
-  try {
-    const saved = localStorage.getItem('signal_songs');
-    if (saved) songs = JSON.parse(saved);
-  } catch (e) {}
-  function save() {
-    try { localStorage.setItem('signal_songs', JSON.stringify(songs)); } catch (e) {}
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  // ---------- Role switching ----------
-  $('btn-operator').onclick = () => {
-    show('operator-screen');
-    resetOperatorScreen();
-    startListening();
-  };
-  $('btn-media').onclick = () => {
-    show('media-songs-screen');
-    renderSongs();
-    stopListening();
-  };
-  $('op-exit').onclick    = () => { stopListening(); show('role-screen'); };
-  $('media-exit').onclick = () => { show('role-screen'); };
-
-  // ---------- Media: songs list ----------
-  function renderSongs() {
-    const list = $('song-list');
-    list.classList.toggle('editing', editing);
-    list.innerHTML = '';
-    songs.forEach((song, i) => {
-      const item = document.createElement('div');
-      item.className = 'song-item';
-
-      const btn = document.createElement('button');
-      btn.className = 'song-btn';
-      btn.textContent = song;
-      btn.onclick = () => selectSong(i);
-
-      const controls = document.createElement('div');
-      controls.className = 'edit-controls';
-      controls.innerHTML = `
-        <button class="edit-btn" data-act="up">▲</button>
-        <button class="edit-btn" data-act="down">▼</button>
-        <button class="edit-btn delete" data-act="del">✕</button>
-      `;
-      controls.querySelector('[data-act="up"]').onclick   = () => moveSong(i, -1);
-      controls.querySelector('[data-act="down"]').onclick = () => moveSong(i, 1);
-      controls.querySelector('[data-act="del"]').onclick  = () => deleteSong(i);
-
-      item.appendChild(btn);
-      item.appendChild(controls);
-      list.appendChild(item);
-    });
-  }
-
-  $('edit-toggle').onclick = () => {
-    editing = !editing;
-    $('edit-toggle').classList.toggle('active', editing);
-    renderSongs();
-  };
-
-  function deleteSong(i) {
-    if (!confirm('Delete "' + songs[i] + '"?')) return;
-    songs.splice(i, 1);
-    save(); renderSongs();
-  }
-  function moveSong(i, dir) {
-    const j = i + dir;
-    if (j < 0 || j >= songs.length) return;
-    [songs[i], songs[j]] = [songs[j], songs[i]];
-    save(); renderSongs();
-  }
-  function selectSong(i) {
-    if (editing) return;
-    currentSong = songs[i];
-    $('current-song-label').textContent = currentSong;
-    sendMessage({ type: 'song', name: currentSong });
-    show('media-control-screen');
-  }
-
-  // ---------- Add song modal ----------
-  $('add-song-btn').onclick = () => {
-    $('add-modal').classList.add('active');
-    $('song-input').value = '';
-    setTimeout(() => $('song-input').focus(), 50);
-  };
-  $('modal-cancel').onclick  = () => $('add-modal').classList.remove('active');
-  $('modal-confirm').onclick = addSong;
-  $('song-input').addEventListener('keydown', e => { if (e.key === 'Enter') addSong(); });
-  function addSong() {
-    const name = $('song-input').value.trim();
-    if (!name) return;
-    songs.push(name);
-    save();
-    $('add-modal').classList.remove('active');
-    renderSongs();
-  }
-
-  // ---------- Media: control quadrants ----------
-  document.querySelectorAll('.quad').forEach(q => {
-    q.onclick = () => {
-      q.classList.remove('flash');
-      void q.offsetWidth; // restart animation
-      q.classList.add('flash');
-      sendAction(q.dataset.action);
-    };
+}
+function renderPinKeys() {
+  const keys = $('pin-keys');
+  keys.innerHTML = '';
+  ['1','2','3','4','5','6','7','8','9','','0','⌫'].forEach(k => {
+    const b = document.createElement('button');
+    if (k === '') { b.className = 'pin-key empty'; b.disabled = true; }
+    else if (k === '⌫') { b.className = 'pin-key del'; b.textContent = '⌫'; b.onclick = pinDelete; }
+    else { b.className = 'pin-key'; b.textContent = k; b.onclick = () => pinAdd(k); }
+    keys.appendChild(b);
   });
-  function sendAction(action) {
-    if (action === 'exit') {
-      sendMessage({ type: 'exit' });
-      currentSong = '';
-      show('media-songs-screen');
-      return;
+}
+function pinAdd(d) {
+  if (pinBuffer.length >= 6) return;
+  pinBuffer += d;
+  renderPinDots();
+  if (pinBuffer.length === 6) setTimeout(submitPin, 150);
+}
+function pinDelete() { pinBuffer = pinBuffer.slice(0, -1); renderPinDots(); }
+function submitPin() {
+  if (pinBuffer.length !== 6) return;
+  if (pinBuffer !== CORRECT_PIN) {
+    toast('Wrong PIN');
+    pinBuffer = '';
+    renderPinDots();
+    const card = document.querySelector('#pin-screen .auth-card');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    return;
+  }
+  pin = pinBuffer;
+  lsSet('signal_pin', pin);
+  pinBuffer = '';
+  renderPinDots();
+  if (!deviceName) { show('name-screen'); setTimeout(() => $('device-name-input').focus(), 100); }
+  else show('role-screen');
+}
+
+// =====================================================================
+// DEVICE NAME
+// =====================================================================
+$('name-save').onclick = () => {
+  const name = $('device-name-input').value.trim();
+  if (!name) { toast('Name cannot be empty'); return; }
+  deviceName = name;
+  lsSet('signal_device_name', deviceName);
+  show('role-screen');
+};
+$('device-name-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('name-save').click(); });
+
+// =====================================================================
+// SETTINGS
+// =====================================================================
+$('settings-btn').onclick = () => {
+  $('settings-name').value = deviceName;
+  $('settings-modal').classList.add('active');
+};
+$('settings-cancel').onclick = () => $('settings-modal').classList.remove('active');
+$('settings-save').onclick = () => {
+  const n = $('settings-name').value.trim();
+  if (!n) { toast('Name cannot be empty'); return; }
+  deviceName = n;
+  lsSet('signal_device_name', deviceName);
+  $('settings-modal').classList.remove('active');
+  toast('Saved', true);
+};
+$('settings-logout').onclick = () => {
+  if (!confirm('Sign out? You will need to re-enter the PIN.')) return;
+  pin = '';
+  lsSet('signal_pin', '');
+  $('settings-modal').classList.remove('active');
+  pinBuffer = '';
+  renderPinDots();
+  show('pin-screen');
+};
+
+// =====================================================================
+// ROLE SELECTION
+// =====================================================================
+$('btn-operator').onclick = () => {
+  show('operator-screen');
+  opDevices.clear();
+  renderOperator();
+  startListening();
+};
+$('btn-media').onclick = () => {
+  stopListening();
+  show('media-songs-screen');
+  renderSongs();
+};
+$('btn-chair').onclick = () => {
+  stopListening();
+  show('chair-choice-screen');
+};
+
+// Exits — also clear this device from operator display
+$('op-exit').onclick    = () => { stopListening(); show('role-screen'); };
+$('songs-exit').onclick = () => { sendMessage({ type: 'exit' }); show('role-screen'); };
+$('chair-exit').onclick = () => { sendMessage({ type: 'exit' }); show('role-screen'); };
+
+// Chair sub-navigation (no messages sent — pure UI nav)
+$('texts-back').onclick    = () => show('chair-choice-screen');
+$('books-back').onclick    = () => show('chair-choice-screen');
+$('chapters-back').onclick = () => show('chair-bible-books-screen');
+$('verses-back').onclick   = () => show('chair-bible-chapters-screen');
+
+// =====================================================================
+// MEDIA: SONGS LIST
+// =====================================================================
+$('songs-edit-toggle').onclick = () => {
+  editingSongs = !editingSongs;
+  $('songs-edit-toggle').classList.toggle('active', editingSongs);
+  renderSongs();
+};
+function renderSongs() {
+  renderItemList('song-list', songs, editingSongs, 'song', selectSong, deleteSong, moveSong);
+}
+function deleteSong(i) {
+  if (!confirm('Delete "' + songs[i] + '"?')) return;
+  songs.splice(i, 1); lsSet('signal_songs', songs); renderSongs();
+}
+function moveSong(i, dir) {
+  const j = i + dir; if (j < 0 || j >= songs.length) return;
+  [songs[i], songs[j]] = [songs[j], songs[i]];
+  lsSet('signal_songs', songs); renderSongs();
+}
+function selectSong(i) {
+  if (editingSongs) return;
+  currentSong = songs[i];
+  $('current-song-label').textContent = currentSong;
+  sendMessage({ type: 'song', name: currentSong });
+  show('media-control-screen');
+}
+
+// Add song modal
+$('add-song-btn').onclick = () => {
+  $('add-song-modal').classList.add('active');
+  $('song-input').value = '';
+  setTimeout(() => $('song-input').focus(), 50);
+};
+$('song-modal-cancel').onclick = () => $('add-song-modal').classList.remove('active');
+$('song-modal-confirm').onclick = () => {
+  const n = $('song-input').value.trim();
+  if (!n) return;
+  songs.push(n); lsSet('signal_songs', songs);
+  $('add-song-modal').classList.remove('active');
+  renderSongs();
+};
+$('song-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('song-modal-confirm').click(); });
+
+// =====================================================================
+// MEDIA: QUADRANTS
+// =====================================================================
+document.querySelectorAll('.quad').forEach(q => {
+  q.onclick = () => {
+    q.classList.remove('flash');
+    void q.offsetWidth; // restart animation
+    q.classList.add('flash');
+    sendAction(q.dataset.action);
+  };
+});
+function sendAction(action) {
+  if (action === 'exit') {
+    sendMessage({ type: 'exit' });
+    currentSong = '';
+    show('media-songs-screen');
+    return;
+  }
+  sendMessage({ type: 'action', action: action, song: currentSong });
+}
+
+// =====================================================================
+// CHAIR: BIBLE / TEXT
+// =====================================================================
+$('choice-bible').onclick = () => { show('chair-bible-books-screen'); renderBooks(); };
+$('choice-text').onclick  = () => { show('chair-texts-screen'); renderTexts(); };
+
+// ---------- Texts ----------
+$('texts-edit-toggle').onclick = () => {
+  editingTexts = !editingTexts;
+  $('texts-edit-toggle').classList.toggle('active', editingTexts);
+  renderTexts();
+};
+function renderTexts() {
+  renderItemList('text-list', texts, editingTexts, 'text', selectText, deleteText, moveText);
+}
+function deleteText(i) {
+  if (!confirm('Delete this text?')) return;
+  texts.splice(i, 1); lsSet('signal_texts', texts); renderTexts();
+}
+function moveText(i, dir) {
+  const j = i + dir; if (j < 0 || j >= texts.length) return;
+  [texts[i], texts[j]] = [texts[j], texts[i]];
+  lsSet('signal_texts', texts); renderTexts();
+}
+async function selectText(i) {
+  if (editingTexts) return;
+  const ok = await sendMessage({ type: 'text', content: texts[i] });
+  if (ok) toast('Sent', true);
+}
+
+$('add-text-btn').onclick = () => {
+  $('add-text-modal').classList.add('active');
+  $('text-input').value = '';
+  setTimeout(() => $('text-input').focus(), 50);
+};
+$('text-modal-cancel').onclick = () => $('add-text-modal').classList.remove('active');
+$('text-modal-confirm').onclick = () => {
+  const t = $('text-input').value.trim();
+  if (!t) return;
+  texts.push(t); lsSet('signal_texts', texts);
+  $('add-text-modal').classList.remove('active');
+  renderTexts();
+};
+
+// ---------- Shared list renderer ----------
+function renderItemList(listId, items, editing, type, onSelect, onDelete, onMove) {
+  const list = $(listId);
+  list.classList.toggle('editing', editing);
+  list.innerHTML = '';
+  items.forEach((item, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'list-item';
+    const btn = document.createElement('button');
+    btn.className = 'item-btn ' + type;
+    btn.textContent = item;
+    btn.onclick = () => onSelect(i);
+    const ctl = document.createElement('div');
+    ctl.className = 'edit-controls';
+    const up = document.createElement('button'); up.className = 'edit-btn';        up.textContent = '▲'; up.onclick = () => onMove(i, -1);
+    const dn = document.createElement('button'); dn.className = 'edit-btn';        dn.textContent = '▼'; dn.onclick = () => onMove(i, 1);
+    const dl = document.createElement('button'); dl.className = 'edit-btn delete'; dl.textContent = '✕'; dl.onclick = () => onDelete(i);
+    ctl.appendChild(up); ctl.appendChild(dn); ctl.appendChild(dl);
+    wrap.appendChild(btn); wrap.appendChild(ctl);
+    list.appendChild(wrap);
+  });
+}
+
+// =====================================================================
+// CHAIR: BIBLE BOOKS → CHAPTERS → VERSES
+// =====================================================================
+function renderBooks() {
+  const list = $('books-list');
+  list.innerHTML = '';
+  const ot = document.createElement('div'); ot.className = 'book-section'; ot.textContent = 'Old Testament';
+  list.appendChild(ot);
+  BIBLE_BOOKS.forEach((b, idx) => {
+    if (idx === 39) {
+      const nt = document.createElement('div'); nt.className = 'book-section'; nt.textContent = 'New Testament';
+      list.appendChild(nt);
     }
-    sendMessage({ type: 'action', action: action, song: currentSong });
+    const btn = document.createElement('button');
+    btn.className = 'book-btn';
+    btn.textContent = b[0];
+    btn.onclick = () => selectBook(b);
+    list.appendChild(btn);
+  });
+}
+async function selectBook(b) {
+  currentBook = { name: b[0], chapters: b[1] };
+  currentChapter = 0;
+  $('chapters-title').textContent = currentBook.name;
+  renderChapters();
+  show('chair-bible-chapters-screen');
+  await sendMessage({ type: 'bible_book', book: currentBook.name });
+}
+function renderChapters() {
+  const grid = $('chapters-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= currentBook.chapters; i++) {
+    const b = document.createElement('button');
+    b.className = 'num-btn'; b.textContent = i;
+    b.onclick = () => selectChapter(i);
+    grid.appendChild(b);
   }
-
-  // ---------- Toast feedback ----------
-  let toastTimer = null;
-  function toast(msg, isSuccess) {
-    const t = $('toast');
-    t.textContent = msg;
-    t.classList.toggle('success', !!isSuccess);
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+async function selectChapter(n) {
+  currentChapter = n;
+  $('verses-title').textContent = currentBook.name + ' ' + n;
+  renderVerses(50);
+  show('chair-bible-verses-screen');
+  await sendMessage({ type: 'bible_chapter', book: currentBook.name, chapter: n });
+}
+function renderVerses(count) {
+  const grid = $('verses-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= count; i++) {
+    const b = document.createElement('button');
+    b.className = 'num-btn'; b.textContent = i;
+    b.onclick = () => selectVerse(i);
+    grid.appendChild(b);
   }
+  if (count < 200) {  // Psalm 119 has 176 verses; cap at 200 to be safe
+    const more = document.createElement('button');
+    more.className = 'num-btn num-more';
+    more.textContent = '+ Show more verses';
+    more.onclick = () => renderVerses(Math.min(count + 50, 200));
+    grid.appendChild(more);
+  }
+}
+async function selectVerse(n) {
+  const ref = currentBook.name + ' ' + currentChapter + ':' + n;
+  const ok = await sendMessage({ type: 'bible_verse', book: currentBook.name, chapter: currentChapter, verse: n });
+  if (ok) toast(ref + ' sent', true);
+}
 
-  // ---------- Network (ntfy.sh) ----------
-  async function sendMessage(payload) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 6000);
+// =====================================================================
+// NETWORK (ntfy.sh)
+// =====================================================================
+function topic() { return APP_PREFIX + pin; }
+
+async function sendMessage(payload) {
+  if (!pin) { toast('Not signed in'); return false; }
+  payload.device = deviceName || '(unnamed)';
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    const res = await fetch(`${NTFY_URL}/${topic()}`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      signal: ctrl.signal,
+      cache: 'no-store'
+    });
+    clearTimeout(timer);
+    if (!res.ok) { toast('Send failed (HTTP ' + res.status + ')'); return false; }
+    return true;
+  } catch (e) {
+    clearTimeout(timer);
+    toast(e.name === 'AbortError' ? 'Send timed out — check internet' : 'Send failed — no connection');
+    console.error(e);
+    return false;
+  }
+}
+
+function startListening() {
+  stopListening();
+  $('op-status').textContent = 'connecting…';
+  const es = new EventSource(`${NTFY_URL}/${topic()}/sse`);
+  eventSource = es;
+  es.onopen = () => { if (eventSource === es) $('op-status').textContent = 'connected'; };
+  es.onerror = () => {
+    if (eventSource !== es) return;
+    if (es.readyState === EventSource.CONNECTING) $('op-status').textContent = 'reconnecting…';
+    else if (es.readyState === EventSource.CLOSED) $('op-status').textContent = 'disconnected';
+  };
+  es.onmessage = (e) => {
+    if (eventSource !== es) return;
     try {
-      const res = await fetch(`${NTFY_URL}/${TOPIC}`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-        cache: 'no-store'
-      });
-      clearTimeout(timer);
-      if (!res.ok) {
-        toast('Send failed (HTTP ' + res.status + ')');
-        return false;
+      const data = JSON.parse(e.data);
+      if (data && data.event === 'message' && typeof data.message === 'string') {
+        handleMessage(JSON.parse(data.message));
       }
-      return true;
-    } catch (e) {
-      clearTimeout(timer);
-      if (e.name === 'AbortError') {
-        toast('Send timed out — check internet');
-      } else {
-        toast('Send failed — no connection');
-      }
-      console.error('send error', e);
-      return false;
+    } catch (err) { console.error('parse', err); }
+  };
+}
+function stopListening() {
+  if (eventSource) {
+    eventSource.onopen = null;
+    eventSource.onerror = null;
+    eventSource.onmessage = null;
+    try { eventSource.close(); } catch (e) {}
+    eventSource = null;
+  }
+}
+
+// =====================================================================
+// OPERATOR: MULTI-DEVICE DISPLAY
+// =====================================================================
+// opDevices: Map<deviceName, { time: ms, state: {...} }>
+//   state.kind: 'song' | 'text' | 'bible'
+//   For 'song':   { kind, song, action }       (action: null | 'repeat' | 'next' | 'previous')
+//   For 'text':   { kind, content }
+//   For 'bible':  { kind, book, chapter, verse }  (chapter/verse may be null)
+const opDevices = new Map();
+
+function handleMessage(msg) {
+  if (!msg || !msg.type) return;
+  const dev = msg.device || '(unknown)';
+  const now = Date.now();
+
+  if (msg.type === 'exit') {
+    opDevices.delete(dev);
+  } else {
+    const prev = opDevices.get(dev);
+    let state = prev ? prev.state : {};
+
+    switch (msg.type) {
+      case 'song':
+        state = { kind: 'song', song: msg.name || '', action: null }; break;
+      case 'action':
+        state = { kind: 'song',
+                  song: msg.song || (state && state.song) || '',
+                  action: msg.action || null }; break;
+      case 'text':
+        state = { kind: 'text', content: msg.content || '' }; break;
+      case 'bible_book':
+        state = { kind: 'bible', book: msg.book || '', chapter: null, verse: null }; break;
+      case 'bible_chapter':
+        state = { kind: 'bible', book: msg.book || '', chapter: msg.chapter || null, verse: null }; break;
+      case 'bible_verse':
+        state = { kind: 'bible', book: msg.book || '', chapter: msg.chapter || null, verse: msg.verse || null }; break;
+      default:
+        return; // unknown message type — ignore
     }
+    opDevices.set(dev, { time: now, state });
+  }
+  renderOperator();
+}
+
+function renderOperator() {
+  const grid = $('op-grid');
+  const now = Date.now();
+  const all = Array.from(opDevices.entries());
+  const active = all.filter(([_, v]) => now - v.time < STALE_MS);
+
+  let toShow;
+  if (active.length >= 2) {
+    // 2+ devices active in last 10s → split
+    toShow = active;
+  } else if (active.length === 1) {
+    // Only one currently active
+    toShow = active;
+  } else if (all.length > 0) {
+    // No one active in last 10s → show last sender (per spec)
+    let last = all[0];
+    for (const e of all) if (e[1].time > last[1].time) last = e;
+    toShow = [last];
+  } else {
+    toShow = [];
   }
 
-  function startListening() {
-    stopListening();
-    $('op-status').textContent = 'connecting…';
-    const es = new EventSource(`${NTFY_URL}/${TOPIC}/sse`);
-    eventSource = es;
-    es.onopen = () => {
-      if (eventSource !== es) return;
-      $('op-status').textContent = 'connected';
-    };
-    es.onerror = () => {
-      if (eventSource !== es) return;
-      if (es.readyState === EventSource.CONNECTING) {
-        $('op-status').textContent = 'reconnecting…';
-      } else if (es.readyState === EventSource.CLOSED) {
-        $('op-status').textContent = 'disconnected';
-      }
-    };
-    es.onmessage = (e) => {
-      if (eventSource !== es) return;
-      try {
-        const data = JSON.parse(e.data);
-        if (data && data.event === 'message' && typeof data.message === 'string') {
-          handleMessage(JSON.parse(data.message));
-        }
-      } catch (err) {
-        console.error('parse error', err);
-      }
-    };
-  }
-  function stopListening() {
-    if (eventSource) {
-      eventSource.onmessage = null;
-      eventSource.onerror   = null;
-      eventSource.onopen    = null;
-      try { eventSource.close(); } catch (e) {}
-      eventSource = null;
-    }
+  grid.innerHTML = '';
+  grid.classList.toggle('split', toShow.length >= 2);
+
+  if (toShow.length === 0) {
+    grid.style.gridTemplateColumns = '1fr';
+    grid.style.gridTemplateRows = '1fr';
+    grid.appendChild(document.createElement('div')).className = 'op-panel';
+    return;
   }
 
-  function handleMessage(msg) {
-    const op = $('operator-screen');
-    if (msg.type === 'song') {
-      op.style.backgroundColor = '#000';
-      $('operator-action').textContent = '';
-      $('operator-song').textContent = msg.name || '';
-    } else if (msg.type === 'action') {
-      const colors = { repeat: '#e11d48', next: '#16a34a', previous: '#2563eb' };
-      op.style.backgroundColor = colors[msg.action] || '#000';
-      $('operator-action').textContent = msg.action || '';
-      $('operator-song').textContent   = msg.song || '';
-    } else if (msg.type === 'exit') {
-      resetOperatorScreen();
-    }
-  }
-  function resetOperatorScreen() {
-    $('operator-screen').style.backgroundColor = '#000';
-    $('operator-action').textContent = '';
-    $('operator-song').textContent   = '';
+  // Layout — stack vertically for 2, otherwise 2-column grid
+  const n = toShow.length;
+  let cols, rows;
+  if (n === 1)      { cols = 1; rows = 1; }
+  else if (n === 2) { cols = 1; rows = 2; }
+  else if (n <= 4)  { cols = 2; rows = 2; }
+  else if (n <= 6)  { cols = 2; rows = 3; }
+  else              { cols = 2; rows = Math.ceil(n / 2); }
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.style.gridTemplateRows    = `repeat(${rows}, 1fr)`;
+
+  toShow.forEach(([dev, v]) => grid.appendChild(makePanel(dev, v.state)));
+}
+
+function makePanel(deviceName, state) {
+  const panel = document.createElement('div');
+  panel.className = 'op-panel';
+
+  const dev = document.createElement('div');
+  dev.className = 'op-device';
+  dev.textContent = deviceName;
+  panel.appendChild(dev);
+
+  let bg = '#000', actionText = '', contentText = '';
+
+  if (!state || !state.kind) {
+    // nothing to show
+  } else if (state.kind === 'song') {
+    if (state.action === 'repeat')        bg = '#e11d48';
+    else if (state.action === 'next')     bg = '#16a34a';
+    else if (state.action === 'previous') bg = '#2563eb';
+    actionText  = state.action || '';
+    contentText = state.song   || '';
+  } else if (state.kind === 'text') {
+    contentText = state.content || '';
+  } else if (state.kind === 'bible') {
+    let ref = state.book || '';
+    if (state.chapter) ref += ' ' + state.chapter;
+    if (state.verse)   ref += ':' + state.verse;
+    contentText = ref;
   }
 
-  // Prevent iOS double-tap zoom
-  document.addEventListener('gesturestart', e => e.preventDefault());
+  panel.style.backgroundColor = bg;
+  if (actionText) {
+    const a = document.createElement('div'); a.className = 'op-action';
+    a.textContent = actionText.toUpperCase();
+    panel.appendChild(a);
+  }
+  if (contentText) {
+    const c = document.createElement('div'); c.className = 'op-content';
+    c.textContent = contentText;
+    panel.appendChild(c);
+  }
+  return panel;
+}
+
+// Auto-collapse split when devices go stale
+setInterval(() => {
+  if ($('operator-screen').classList.contains('active') && opDevices.size > 0) {
+    renderOperator();
+  }
+}, 1000);
+
+// =====================================================================
+// INIT
+// =====================================================================
+// If a stored PIN exists but doesn't match the correct one, drop it
+if (pin && pin !== CORRECT_PIN) {
+  pin = '';
+  lsSet('signal_pin', '');
+}
+
+renderPinKeys();
+renderPinDots();
+if (pin) {
+  if (deviceName) show('role-screen');
+  else { show('name-screen'); setTimeout(() => $('device-name-input').focus(), 100); }
+}
+
+// iOS double-tap zoom blocker
+document.addEventListener('gesturestart', e => e.preventDefault());
 </script>
 </body>
 </html>
